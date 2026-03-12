@@ -1,0 +1,19 @@
+PROJET 5 consigne:
+
+	- grande carte
+	- porte vers quelque chose
+	- ennemies
+	- musique
+	- objet bonus 2 au minimun
+
+
+
+reste a faire:
+
+	- teleportation des 3 porte different 
+	- collision
+	- balle 
+	- vie
+	- musique
+	- spawn ennemie et vie (2 goblin et 1 slime)
+	- pistolet 
