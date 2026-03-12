@@ -30,10 +30,7 @@ TILE_floor17 = (5, 17)
 TILE_floor18 = (6, 15)
 TILE_floor19 = (6, 16)
 
-
-
 SOLID_TILE = [TILE_floor, TILE_floor1, TILE_floor2, TILE_floor3, TILE_floor4, TILE_floor5, TILE_floor6, TILE_floor7, TILE_floor8, TILE_floor9, TILE_floor10, TILE_floor11, TILE_floor11, TILE_floor12, tile_floor13, TILE_floor1, TILE_floor15, TILE_floor16, TILE_floor17,TILE_floor18, TILE_floor19 ]
-
 
 #joueuer#
 
@@ -51,16 +48,19 @@ player = {
 }
 
 enemie_slime = {
+    "x": 30,
+    "y": 252*8,
+    "vx": 1,
+    "dir": -1,   # -1 gauche / 1 droite
+    "alive": True
+}
+
+balle = {
     "x" : 10,
     "y" : 245*8,
     "vx" : 2,
     "f" : True, #vers la droite
-    "last_dir" : False, #direction de l'enemie, prend deux argument booléen vu qu'il ne peut pas etre statique
-    "is_on_floor" : False,
-}
-
-ball = {
-    
+    "last_dir" : False, #direction de la balle, prend deux argument booléen vu qu'il ne peut pas etre statique
 }
 
 enemie_canon = {
@@ -92,10 +92,10 @@ def player_update():
         player["vy"] -= player["jump_force"]
         player["is_on_floor"] = False
     
-    if pyxel.btn(pyxel.KEY_SHIFT) and    player["last_dir"] == 2:
+    if pyxel.btn(pyxel.KEY_SHIFT) and player["last_dir"] == 2:
         player["x"] += 10
 
-    if pyxel.btn(pyxel.KEY_SHIFT) and    player["last_dir"] == 0:
+    if pyxel.btn(pyxel.KEY_SHIFT) and player["last_dir"] == 0:
         player["x"] -= 10
 
     player["vy"] += gravity
@@ -112,7 +112,7 @@ def player_update():
             player["y"] = ((player["y"] + 8) // 8) * 8 - 8
             player["is_on_floor"] = True
 
-        else : 
+        else :
             player["is_on_floor"] = False
 
 def player_draw():
@@ -131,6 +131,56 @@ def player_draw():
             pyxel.blt(screnn_x, screnn_y, 0, 0, 80, u, 8, 5) #vers droite
     else: 
         pyxel.blt(screnn_x, screnn_y, 0, 16, 80, u, 8, 5) #immobile
+        
+def slime_update():
+
+    if not enemie_slime["alive"]:
+        return
+
+    x = enemie_slime["x"]
+    y = enemie_slime["y"]
+    dir = enemie_slime["dir"]
+    speed = enemie_slime["vx"]
+
+    # collision mur devant
+    front_tile = get_tile(x + dir*8, y + 4)
+
+    # sol devant
+    ground_front = get_tile(x + dir*8, y + 8)
+
+    if front_tile in SOLID_TILE or ground_front not in SOLID_TILE:
+        enemie_slime["dir"] *= -1
+    else:
+        enemie_slime["x"] += speed * dir
+
+def slime_player_collision():
+
+    if not enemie_slime["alive"]:
+        return
+
+    px = player["x"]
+    py = player["y"]
+    ex = enemie_slime["x"]
+    ey = enemie_slime["y"]
+
+    if abs(px - ex) < 8 and abs(py - ey) < 8:
+
+        # joueur tombe sur l'ennemi
+        if player["vy"] > 0 and py < ey:
+            enemie_slime["alive"] = False
+            player["vy"] = -4  # rebond
+        else:
+            player["vie"] -= 1
+            
+def slime_draw():
+
+    if not enemie_slime["alive"]:
+        return
+
+    screen_x = enemie_slime["x"] - scroll_x
+    screen_y = enemie_slime["y"] - scroll_y
+
+    pyxel.blt(screen_x, screen_y, 0, 48, 88, 8, 8, 5)
 
 def get_tile(x, y):
     tile_x = x//8
@@ -146,6 +196,8 @@ def update():
         pyxel.quit()
 
     player_update()
+    slime_update()
+    slime_player_collision()
     scroll_x = player["x"] - scroll_border
     scroll_x = max(0, min(scroll_x, max_width - 128))
     scroll_y= player["y"] - scroll_border
@@ -156,6 +208,6 @@ def draw():
     pyxel.bltm(0, 0, 0, scroll_x, scroll_y, 128, 128)
     player_draw()
     tile_x, tile_y =  get_tile(player["x"], player["y"]+8)
-
+    slime_draw()
 
 pyxel.run(update, draw)
