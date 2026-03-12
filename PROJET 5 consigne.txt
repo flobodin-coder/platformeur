@@ -17,3 +17,4 @@ reste a faire:
 	- musique
 	- spawn ennemie et vie (2 goblin et 1 slime)
 	- pistolet 
+	- faire l'arriver
