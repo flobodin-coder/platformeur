@@ -1,13 +1,13 @@
 import pyxel
-
+import time
 
 gravity = 0.5
-
 scroll_x = 0
 scroll_border = 64
 scroll_y = 0
 max_width = 255*8
 max_height = 255*8
+mode = "menu"
 
 TILE_floor = (0,1)
 TILE_floor1 = (1,1)
@@ -32,7 +32,9 @@ TILE_floor19 = (6, 16)
 
 SOLID_TILE = [TILE_floor, TILE_floor1, TILE_floor2, TILE_floor3, TILE_floor4, TILE_floor5, TILE_floor6, TILE_floor7, TILE_floor8, TILE_floor9, TILE_floor10, TILE_floor11, TILE_floor11, TILE_floor12, tile_floor13, TILE_floor1, TILE_floor15, TILE_floor16, TILE_floor17,TILE_floor18, TILE_floor19 ]
 
-#joueuer#
+shoot = []
+enemies_slime1 = []
+#joueur#
 
 player = {
     "x" : 10,
@@ -45,6 +47,7 @@ player = {
     "last_dir" : 1, # prend la variable 0, 1, 2 correspondant respectivement à gauche, pas bouger et droite
     "jump_force" : 6,
     "is_on_floor" : False,
+    "invincibilite" : False
 }
 
 enemie_slime = {
@@ -114,6 +117,9 @@ def player_update():
 
         else :
             player["is_on_floor"] = False
+            
+    if player["vie"] <= 0:
+        mode = "gameover"
 
 def player_draw():
 
@@ -170,8 +176,12 @@ def slime_player_collision():
             enemie_slime["alive"] = False
             player["vy"] = -4  # rebond
         else:
-            player["vie"] -= 1
-            
+            if player["invincibilite"] == False:
+                player["vie"] -= 1
+                player["invincibilite"] = True
+            else:
+                player["vie"] = player["vie"]
+
 def slime_draw():
 
     if not enemie_slime["alive"]:
@@ -187,6 +197,14 @@ def get_tile(x, y):
     tile_y = y//8
     return pyxel.tilemaps[0].pget(tile_x, tile_y)
 
+def restart_game():
+    global shoot, mode, enemies_slime1, player
+    player["x"] = 10
+    player["y"] = 245*8
+    shoot = []
+    enemies_slime1 = []
+    mode = "game"
+
 pyxel.init(128, 128, title = "Jeu de plateforme")
 pyxel.load("jeu.pyxres")
 
@@ -194,6 +212,16 @@ def update():
     global scroll_x, scroll_y
     if pyxel.btnp(pyxel.KEY_Q):
         pyxel.quit()
+
+    if mode == "menu":
+        if pyxel.btnp(pyxel.KEY_SPACE) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
+            restart_game()
+        return
+
+    if mode == "gameover":
+        if pyxel.btnp(pyxel.KEY_R) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
+            restart_game()
+        return
 
     player_update()
     slime_update()
@@ -206,6 +234,18 @@ def update():
 def draw():
     pyxel.cls(0)
     pyxel.bltm(0, 0, 0, scroll_x, scroll_y, 128, 128)
+    if mode == "menu":
+        pyxel.text(40, 40, "Ponographx", 7)
+        pyxel.text(55, 70, "Space to play", 7)
+        return
+
+    if mode == "gameover":
+        pyxel.text(62, 40, "GAME OVER", 8)
+        pyxel.text(25, 70, "Appuie sur R pour recommencer", 7)
+        return
+    
+    pyxel.text(20, 90, str(player["vie"]), 7)
+
     player_draw()
     tile_x, tile_y =  get_tile(player["x"], player["y"]+8)
     slime_draw()
