@@ -169,12 +169,14 @@ def slime_player_collision():
     ex = enemie_slime["x"]
     ey = enemie_slime["y"]
 
+
     if abs(px - ex) < 8 and abs(py - ey) < 8:
 
         # joueur tombe sur l'ennemi
         if player["vy"] > 0 and py < ey:
             enemie_slime["alive"] = False
             player["vy"] = -4  # rebond
+
         else:
             if player["invincibilite"] == False:
                 player["vie"] -= 1
@@ -249,5 +251,6 @@ def draw():
     player_draw()
     tile_x, tile_y =  get_tile(player["x"], player["y"]+8)
     slime_draw()
+    
 
 pyxel.run(update, draw)
