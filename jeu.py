@@ -58,7 +58,8 @@ player = {
     "is_on_floor": False,
     "invincible_until": 0.0,  # timestamp until which invincible
     "has_gun": False,
-    "ammo": 0
+    "ammo": 0,
+    "door_cooldown": 0
 }
 
 # helper spawn
@@ -67,6 +68,7 @@ def spawn_enemy(x, y, type, **kwargs):
         "x": int(x),
         "y": int(y),
         "vx": kwargs.get("vx", 1),
+        "vy": 1,
         "dir": kwargs.get("dir", -1),
         "alive": True,
         "anim": 0,
@@ -86,6 +88,7 @@ def spawn_enemy(x, y, type, **kwargs):
 def spawn_pickup(x, y, ptype):
     pickups.append({"x": int(x), "y": int(y), "type": ptype})
 
+#   position x et y de la porte, puis l'endroit ou le joueur est teleporter
 def spawn_door(x, y, tx, ty):
     doors.append({"x": int(x), "y": int(y), "tx": int(tx), "ty": int(ty)})
 
@@ -274,6 +277,10 @@ def pickups_update():
 
 # portes : interaction
 def doors_update():
+    if player["door_cooldown"] > 0:
+        player["door_cooldown"] -= 1
+        return
+
     for d in doors:
         if abs(player["x"] - d["x"]) < 8 and abs(player["y"] - d["y"]) < 8:
             # appuie sur E pour interagir
@@ -282,6 +289,7 @@ def doors_update():
                 player["y"] = d["ty"]
                 # reset vitesse verticale
                 player["vy"] = 0
+                player["door_cooldown"] = 30
 
 # spawn d'une balle de joueur (projectile)
 def shoot_player_bullet():
@@ -397,7 +405,7 @@ def draw():
     pyxel.cls(0)
     pyxel.bltm(0, 0, 0, scroll_x, scroll_y, 128, 128)
     if mode == "menu":
-        pyxel.text(40, 40, "Ponographx", 7)
+        pyxel.text(40, 40, "rUn", 7)
         pyxel.text(55, 70, "Space to play", 7)
         return
 
@@ -422,11 +430,5 @@ def draw():
             pyxel.blt(sx, sy, 0, 64, 80, 8, 8, 0)
         elif p["type"] == "ammo":
             pyxel.blt(sx, sy, 0, 72, 80, 8, 8, 0)
-
-    # dessin portes (petit marqueur, en vrai je l'enleverais surement)
-    for d in doors:
-        sx = d["x"] - scroll_x
-        sy = d["y"] - scroll_y
-        pyxel.blt(sx, sy, 0, 80, 80, 8, 8, 0)
 
 pyxel.run(update, draw)
