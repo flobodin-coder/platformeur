@@ -30,12 +30,13 @@ TILE_floor16 = (5, 16)
 TILE_floor17 = (5, 17)
 TILE_floor18 = (6, 15)
 TILE_floor19 = (6, 16)
+TILE_floor20 = (48, 136)
 
 SOLID_TILE = [
     TILE_floor, TILE_floor1, TILE_floor2, TILE_floor3, TILE_floor4, TILE_floor5,
     TILE_floor6, TILE_floor7, TILE_floor8, TILE_floor9, TILE_floor10, TILE_floor11,
     TILE_floor11, TILE_floor12, tile_floor13, TILE_floor1, TILE_floor15, TILE_floor16,
-    TILE_floor17, TILE_floor18, TILE_floor19
+    TILE_floor17, TILE_floor18, TILE_floor19, TILE_floor20
 ]
 
 # listes
@@ -152,7 +153,7 @@ def player_draw():
     screnn_x = player["x"] - scroll_x
     screnn_y = player["y"] - scroll_y
 
-    # clignote si invincible
+    # clignote si invincible (mais pour le moment il clignote tt le temps :)
     if time.time() < player["invincible_until"]:
         if (pyxel.frame_count // 4) % 2 == 0:
             return  # saute un affichage pour clignoter
@@ -161,13 +162,13 @@ def player_draw():
 
     if player["move"]:
         if (pyxel.frame_count // 5) % 2 == 0:
-            pyxel.blt(screnn_x, screnn_y, 0, 16, 56, u, 8, 5)
+            pyxel.blt(screnn_x, screnn_y, 0, 0, 80, u, 8, 5)
         else:
             pyxel.blt(screnn_x, screnn_y, 0, 0, 80, u, 8, 5)
     else:
         pyxel.blt(screnn_x, screnn_y, 0, 16, 80, u, 8, 5)
 
-# comportements ennemis
+# comportements ennemis slime
 def slime_behavior(e):
     x = e["x"]
     y = e["y"]
@@ -228,15 +229,14 @@ def enemies_draw():
         screen_x = e["x"] - scroll_x
         screen_y = e["y"] - scroll_y
         if e["type"] == "slime":
-            u = 32 + (e.get("anim", 0) * 8)
             if e["dir"] == 1:
-                pyxel.blt(screen_x, screen_y, 0, u, 80, 8, 8, 0)
+                pyxel.blt(screen_x, screen_y, 0, 48, 88, -8, 8, 5)
             else:
-                pyxel.blt(screen_x, screen_y, 0, u, 80, -8, 8, 0)
+                pyxel.blt(screen_x, screen_y, 0, 48, 88, 8, 8, 5)
         elif e["type"] == "bullet":
-            pyxel.blt(screen_x, screen_y, 0, 48, 80, 8, 8, 0)
+            pyxel.blt(screen_x, screen_y, 0, 40, 104, 8, 8, 5)
         elif e["type"] == "canon":
-            pyxel.blt(screen_x, screen_y, 0, 56, 80, 8, 8, 0)  # adapte la zone du sprite pour canon
+            pyxel.blt(screen_x, screen_y, 0, 56, 80, 8, 8, 5)  # adapte la zone du sprite pour canon
 
 # collision joueur ennemis (gère invincibilité)
 def enemies_collision():
@@ -348,29 +348,21 @@ def restart_game():
     doors = []
     mode = "game"
     # (re-spawn quelques entités d'exemple)
-    spawn_enemy(120, 245 * 8, "slime")
+    spawn_enemy(120, 252 * 8, "slime")
     spawn_enemy(200, 245 * 8, "slime")
     spawn_enemy(300, 245 * 8, "canon", dir=-1, shoot_interval=2.0)
 
     # exemples de pickups et portes (ajuste positions)
     spawn_pickup(150, 245 * 8 - 8, "gun")
     spawn_pickup(220, 245 * 8 - 8, "ammo")
-    spawn_door(400, 245 * 8, 60, 240 * 8)  # ex: door teleporte a (60, 240*8)
+    spawn_door(120, 252 * 8, 120, 252 * 8)  # ex: door teleporte a (60, 240*8)
 
 # initialisation pyxel
 pyxel.init(128, 128, title="Jeu de plateforme")
 pyxel.load("jeu.pyxres")
 
-# spawn initial (sera reset dans restart_game aussi)
-spawn_enemy(120, 245 * 8, "slime")
-spawn_enemy(200, 245 * 8, "slime")
-spawn_enemy(300, 245 * 8, "canon", dir=-1, shoot_interval=2.0)
-spawn_pickup(150, 245 * 8 - 8, "gun")
-spawn_pickup(220, 245 * 8 - 8, "ammo")
-spawn_door(400, 245 * 8, 60, 240 * 8)
-
 def update():
-    global scroll_x, scroll_y, mode
+    global scroll_x, scroll_y, mode, doors
     if pyxel.btnp(pyxel.KEY_Q):
         pyxel.quit()
 
@@ -414,7 +406,7 @@ def draw():
         pyxel.text(25, 70, "Appuie sur R pour recommencer", 7)
         return
 
-    # HUD
+    # Texte sur l'écrant
     pyxel.text(20, 90, f"Vie: {player['vie']}", 7)
     pyxel.text(20, 98, f"Ammo: {player['ammo'] if player['has_gun'] else '-'}", 7)
 
@@ -430,5 +422,6 @@ def draw():
             pyxel.blt(sx, sy, 0, 64, 80, 8, 8, 0)
         elif p["type"] == "ammo":
             pyxel.blt(sx, sy, 0, 72, 80, 8, 8, 0)
+            
 
 pyxel.run(update, draw)
