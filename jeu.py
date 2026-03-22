@@ -75,10 +75,12 @@ def spawn_enemy(x, y, type, **kwargs):
         "anim": 0,
         "type": type,
     }
+    
     # cannon-specific
     if type == "canon":
         e["shoot_interval"] = kwargs.get("shoot_interval", 2.0)  # seconds
         e["last_shot"] = time.time()
+        
     # bullet-specific
     if type == "bullet":
         e["born_time"] = time.time()
@@ -198,7 +200,7 @@ def bullet_behavior(e):
 def canon_behavior(e):
     # canons ne bougent pas : tirent des bullets à intervalle
     now = time.time()
-    if now - e.get("last_shot", 0) >= e.get("shoot_interval", 2.0):
+    if now - e.get("last_shot", 0) >= e.get("shoot_interval", 2.5):
         # spawn bullet devant la bouche du canon
         dir = e.get("dir", -1)
         bx = e["x"] + dir * 8
@@ -234,7 +236,7 @@ def enemies_draw():
             else:
                 pyxel.blt(screen_x, screen_y, 0, 48, 88, 8, 8, 5)
         elif e["type"] == "bullet":
-            pyxel.blt(screen_x, screen_y, 0, 40, 104, 8, 8, 5)
+            pyxel.blt(screen_x, screen_y, 0, 0, 104, 8, 8, 5)
         elif e["type"] == "canon":
             pyxel.blt(screen_x, screen_y, 0, 56, 80, 8, 8, 5)  # adapte la zone du sprite pour canon
 
@@ -422,6 +424,5 @@ def draw():
             pyxel.blt(sx, sy, 0, 64, 80, 8, 8, 0)
         elif p["type"] == "ammo":
             pyxel.blt(sx, sy, 0, 72, 80, 8, 8, 0)
-            
 
 pyxel.run(update, draw)
