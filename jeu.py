@@ -52,15 +52,17 @@ player = {
     "vx": 2,
     "vy": 2,
     "vie": 3,
-    "f": True,  # vers la droite
+    "f": True,
     "move": False,
-    "last_dir": 1,  # 0 left, 1 idle, 2 right
+    "last_dir": 1,
     "jump_force": 6,
     "is_on_floor": False,
-    "invincible_until": 0.0,  # timestamp until which invincible
+    "invincible_until": 0.0,
     "has_gun": False,
     "ammo": 0,
-    "door_cooldown": 0
+    "door_cooldown": 0,
+    "has_key": False,
+    "dash_cooldown": 0
 }
 
 # helper spawn
@@ -75,52 +77,58 @@ def spawn_enemy(x, y, type, **kwargs):
         "anim": 0,
         "type": type,
     }
-    # cannon-specific
     if type == "canon":
-        e["shoot_interval"] = kwargs.get("shoot_interval", 2.0)  # seconds
+        e["shoot_interval"] = kwargs.get("shoot_interval", 2.0)
         e["last_shot"] = time.time()
-    # bullet-specific
     if type == "bullet":
         e["born_time"] = time.time()
         e["lifetime"] = kwargs.get("lifetime", 3.0)
     enemies.append(e)
     return e
 
+
+    
 def spawn_pickup(x, y, ptype):
     pickups.append({"x": int(x), "y": int(y), "type": ptype})
 
-#   position x et y de la porte, puis l'endroit ou le joueur est teleporter
-def spawn_door(x, y, tx, ty):
-    doors.append({"x": int(x), "y": int(y), "tx": int(tx), "ty": int(ty)})
+#   position x et y de la porte, puis l'endroit ou le joueur est teleporter, et puis si elle est bloqué par un objet
+def spawn_door(x, y, tx, ty, locked=False):
+    doors.append({"x": int(x), "y": int(y), "tx": int(tx), "ty": int(ty), "locked": locked})
+
 
 # movement and input
 def player_update():
     global mode
     player["move"] = False
-    player["last_dir"] = 1
-
-    if pyxel.btn(pyxel.KEY_RIGHT):
-        player["x"] += player["vx"]
-        player["f"] = True
-        player["move"] = True
-        player["last_dir"] = 2
+    player["last_dir"] = 2
 
     if pyxel.btn(pyxel.KEY_LEFT):
         player["x"] -= player["vx"]
-        player["f"] = False
+        player["f"] = True
         player["move"] = True
         player["last_dir"] = 0
+        
+    if pyxel.btn(pyxel.KEY_RIGHT):
+        player["x"] += player["vx"]
+        player["f"] = False
+        player["move"] = True
+        player["last_dir"] = 2
 
     if pyxel.btn(pyxel.KEY_UP) and player["is_on_floor"]:
         player["vy"] -= player["jump_force"]
         player["is_on_floor"] = False
 
-    if pyxel.btn(pyxel.KEY_SHIFT) and player["last_dir"] == 2:
-        player["x"] += 10
-    if pyxel.btn(pyxel.KEY_SHIFT) and player["last_dir"] == 0:
-        player["x"] -= 10
+    # DASH avec cooldown
+    if player["dash_cooldown"] > 0:
+        player["dash_cooldown"] -= 1
 
-    # tirer si a l'arme et ammo > 0 : touche X
+    if pyxel.btnp(pyxel.KEY_SHIFT) and player["dash_cooldown"] == 0:
+        if player["last_dir"] == 2:
+            player["x"] += 25
+        elif player["last_dir"] == 0:
+            player["x"] -= 25
+        player["dash_cooldown"] = 30
+
     if pyxel.btnp(pyxel.KEY_X) and player["has_gun"] and player["ammo"] > 0:
         shoot_player_bullet()
         player["ammo"] -= 1
@@ -128,7 +136,6 @@ def player_update():
     player["vy"] += gravity
     player["y"] += player["vy"]
 
-    # detection des tuiles sous le joueur
     tile_under_left = get_tile(player["x"] + 2, player["y"] + 8)
     tile_under_right = get_tile(player["x"] + 6, player["y"] + 8)
 
@@ -140,11 +147,9 @@ def player_update():
         else:
             player["is_on_floor"] = False
 
-    # si chute sous la map -> restart
     if player["y"] > max_height + 64:
         restart_game()
 
-    # gameover mode
     if player["vie"] <= 0:
         mode = "gameover"
 
@@ -153,7 +158,7 @@ def player_draw():
     screnn_x = player["x"] - scroll_x
     screnn_y = player["y"] - scroll_y
 
-    # clignote si invincible (mais pour le moment il clignote tt le temps :)
+    # clignote si invincible
     if time.time() < player["invincible_until"]:
         if (pyxel.frame_count // 4) % 2 == 0:
             return  # saute un affichage pour clignoter
@@ -162,9 +167,9 @@ def player_draw():
 
     if player["move"]:
         if (pyxel.frame_count // 5) % 2 == 0:
-            pyxel.blt(screnn_x, screnn_y, 0, 0, 80, u, 8, 5)
+            pyxel.blt(screnn_x, screnn_y, 0, 8, 80, u, 8, 5)
         else:
-            pyxel.blt(screnn_x, screnn_y, 0, 0, 80, u, 8, 5)
+            pyxel.blt(screnn_x, screnn_y, 0, 8, 80, u, 8, 5)
     else:
         pyxel.blt(screnn_x, screnn_y, 0, 16, 80, u, 8, 5)
 
@@ -198,7 +203,7 @@ def bullet_behavior(e):
 def canon_behavior(e):
     # canons ne bougent pas : tirent des bullets à intervalle
     now = time.time()
-    if now - e.get("last_shot", 0) >= e.get("shoot_interval", 2.0):
+    if now - e.get("last_shot", 0) >= e.get("shoot_interval", 2.5):
         # spawn bullet devant la bouche du canon
         dir = e.get("dir", -1)
         bx = e["x"] + dir * 8
@@ -234,7 +239,7 @@ def enemies_draw():
             else:
                 pyxel.blt(screen_x, screen_y, 0, 48, 88, 8, 8, 5)
         elif e["type"] == "bullet":
-            pyxel.blt(screen_x, screen_y, 0, 40, 104, 8, 8, 5)
+            pyxel.blt(screen_x, screen_y, 0, 0, 104, 8, 8, 5)
         elif e["type"] == "canon":
             pyxel.blt(screen_x, screen_y, 0, 56, 80, 8, 8, 5)  # adapte la zone du sprite pour canon
 
@@ -274,6 +279,9 @@ def pickups_update():
                 if player["has_gun"]:
                     player["ammo"] = 5
                     pickups.remove(p)
+            elif p["type"] == "key":
+                player["has_key"] = True
+                pickups.remove(p)
 
 # portes : interaction
 def doors_update():
@@ -283,13 +291,15 @@ def doors_update():
 
     for d in doors:
         if abs(player["x"] - d["x"]) < 8 and abs(player["y"] - d["y"]) < 8:
-            # appuie sur E pour interagir
             if pyxel.btnp(pyxel.KEY_E):
+                if d.get("locked") and not player["has_key"]:
+                    return
                 player["x"] = d["tx"]
                 player["y"] = d["ty"]
-                # reset vitesse verticale
                 player["vy"] = 0
                 player["door_cooldown"] = 30
+                if d.get("locked"):
+                    player["has_key"] = False
 
 # spawn d'une balle de joueur (projectile)
 def shoot_player_bullet():
@@ -353,7 +363,7 @@ def restart_game():
     spawn_enemy(300, 245 * 8, "canon", dir=-1, shoot_interval=2.0)
 
     # exemples de pickups et portes (ajuste positions)
-    spawn_pickup(150, 245 * 8 - 8, "gun")
+    spawn_pickup(120, 252 * 8, "gun")
     spawn_pickup(220, 245 * 8 - 8, "ammo")
     spawn_door(120, 252 * 8, 120, 252 * 8)  # ex: door teleporte a (60, 240*8)
 
@@ -396,6 +406,36 @@ def update():
 def draw():
     pyxel.cls(0)
     pyxel.bltm(0, 0, 0, scroll_x, scroll_y, 128, 128)
+
+    pyxel.text(20, 90, f"Vie: {player['vie']}", 7)
+    pyxel.text(20, 98, f"Ammo: {player['ammo'] if player['has_gun'] else '-'}", 7)
+
+    # TEXTE AU DESSUS DES PORTES
+    for d in doors:
+        if abs(player["x"] - d["x"]) < 8 and abs(player["y"] - d["y"]) < 8:
+            sx = d["x"] - scroll_x
+            sy = d["y"] - scroll_y - 10
+            if d.get("locked"):
+                if player["has_key"]:
+                    pyxel.text(sx, sy, "E: ouvrir", 7)
+                else:
+                    pyxel.text(sx, sy, "cle requise", 8)
+            else:
+                pyxel.text(sx, sy, "E: entrer", 7)
+    player_draw()
+    enemies_draw()
+
+    # TEXTURES PICKUPS
+    for p in pickups:
+        sx = p["x"] - scroll_x
+        sy = p["y"] - scroll_y
+        if p["type"] == "gun":
+            pyxel.blt(sx, sy, 0, 64, 80, 8, 8, 0)
+        elif p["type"] == "ammo":
+            pyxel.blt(sx, sy, 0, 72, 80, 8, 8, 0)
+        elif p["type"] == "key":
+            pyxel.blt(sx, sy, 0, 80, 80, 8, 8, 0)
+    
     if mode == "menu":
         pyxel.text(40, 40, "rUn", 7)
         pyxel.text(55, 70, "Space to play", 7)
@@ -422,6 +462,5 @@ def draw():
             pyxel.blt(sx, sy, 0, 64, 80, 8, 8, 0)
         elif p["type"] == "ammo":
             pyxel.blt(sx, sy, 0, 72, 80, 8, 8, 0)
-            
 
 pyxel.run(update, draw)
