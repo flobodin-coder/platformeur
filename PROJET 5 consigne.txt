@@ -6,12 +6,7 @@ PROJET 5 consigne:
 	- musique
 	- objet bonus 2 au minimun
 
-reste a faire:
+reste a faire: 
 
 	- teleportation des 3 porte different 
-	- collision
-	- balle 
-	- vie
-	- spawn ennemie et vie (2 goblin et 1 slime)
-	- pistolet 
 	- programmer l'arriver

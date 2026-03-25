@@ -89,7 +89,7 @@ def spawn_enemy(x, y, type, **kwargs):
 def spawn_pickup(x, y, ptype):
     pickups.append({"x": int(x), "y": int(y), "type": ptype})
 
-#   position x et y de la porte, puis l'endroit ou le joueur est teleporter, et puis si elle est bloqué par un objet
+#   position x et y de la porte, puis l'endroit ou le joueur est teleporter, et puis si elle est bloqué par un objet (clé)
 def spawn_door(x, y, tx, ty, locked=False):
     doors.append({"x": int(x), "y": int(y), "tx": int(tx), "ty": int(ty), "locked": locked})
 
@@ -239,6 +239,8 @@ def enemies_draw():
             pyxel.blt(screen_x, screen_y, 0, 0, 104, 8, 8, 5)
         elif e["type"] == "canon":
             pyxel.blt(screen_x, screen_y, 0, 56, 80, 8, 8, 5)  # adapte la zone du sprite pour canon
+        elif e["type"] == "player_bullet":
+            pyxel.blt(screen_x, screen_y, 0, 48, 112, 8, 8, 5)
 
 # collision joueur ennemis (gère invincibilité)
 def enemies_collision():
@@ -350,6 +352,7 @@ def restart_game():
     player["has_gun"] = False
     player["ammo"] = 0
     player["invincible_until"] = 0.0
+    player["has_key"] = True
     enemies = []
     pickups = []
     doors = []
@@ -362,7 +365,7 @@ def restart_game():
     # exemples de pickups et portes (ajuste positions)
     spawn_pickup(120, 252 * 8, "gun")
     spawn_pickup(220, 245 * 8 - 8, "ammo")
-    spawn_door(120, 252 * 8, 120, 252 * 8)  # ex: door teleporte a (60, 240*8)
+    spawn_door(120, 252 * 8, 120, 252 * 8, locked=True)  # ex: door teleporte a (60, 240*8)
 
 # initialisation pyxel
 pyxel.init(128, 128, title="Jeu de plateforme")
@@ -427,12 +430,12 @@ def draw():
         sx = p["x"] - scroll_x
         sy = p["y"] - scroll_y
         if p["type"] == "gun":
-            pyxel.blt(sx, sy, 0, 64, 80, 8, 8, 0)
+            pyxel.blt(sx, sy, 0, 40, 112, 8, 8, 5)
         elif p["type"] == "ammo":
-            pyxel.blt(sx, sy, 0, 72, 80, 8, 8, 0)
+            pyxel.blt(sx, sy, 0, 48, 112, 8, 8, 5)
         elif p["type"] == "key":
-            pyxel.blt(sx, sy, 0, 80, 80, 8, 8, 0)
-    
+            pyxel.blt(sx, sy, 0, 56, 32, 8, 8, 5)
+
     if mode == "menu":
         pyxel.text(40, 40, "rUn", 7)
         pyxel.text(55, 70, "Space to play", 7)
@@ -456,8 +459,8 @@ def draw():
         sx = p["x"] - scroll_x
         sy = p["y"] - scroll_y
         if p["type"] == "gun":
-            pyxel.blt(sx, sy, 0, 64, 80, 8, 8, 0)
+            pyxel.blt(sx, sy, 0, 40, 112, 8, 8, 5)
         elif p["type"] == "ammo":
-            pyxel.blt(sx, sy, 0, 72, 80, 8, 8, 0)
+            pyxel.blt(sx, sy, 0, 48, 112, 8, 8, 5)
 
 pyxel.run(update, draw)
