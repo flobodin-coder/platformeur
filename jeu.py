@@ -395,7 +395,7 @@ def update():
     pickups_update()
     doors_update()
 
-    scroll_x = player["x"] - scroll_border
+    scroll_x = player["x"] - scroll_border  
     scroll_x = max(0, min(scroll_x, max_width - 128))
     scroll_y = player["y"] - scroll_border
     scroll_y = max(0, min(scroll_y, max_height - 128))
@@ -450,7 +450,7 @@ def draw():
     # dessin
     player_draw()
     enemies_draw()
-
+ 
     # dessin pickups
     for p in pickups:
         sx = p["x"] - scroll_x
