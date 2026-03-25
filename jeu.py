@@ -85,8 +85,6 @@ def spawn_enemy(x, y, type, **kwargs):
         e["lifetime"] = kwargs.get("lifetime", 3.0)
     enemies.append(e)
     return e
-
-
     
 def spawn_pickup(x, y, ptype):
     pickups.append({"x": int(x), "y": int(y), "type": ptype})
@@ -94,7 +92,6 @@ def spawn_pickup(x, y, ptype):
 #   position x et y de la porte, puis l'endroit ou le joueur est teleporter, et puis si elle est bloqué par un objet
 def spawn_door(x, y, tx, ty, locked=False):
     doors.append({"x": int(x), "y": int(y), "tx": int(tx), "ty": int(ty), "locked": locked})
-
 
 # movement and input
 def player_update():
