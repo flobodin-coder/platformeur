@@ -309,7 +309,7 @@ def shoot_player_bullet():
     by = player["y"] + 4
     b = {
         "x": int(bx),
-        "y": int(by),
+        "y": int(by) - 4,
         "vx": 3,
         "dir": dir,
         "type": "player_bullet",
@@ -347,6 +347,7 @@ def get_tile(x, y):
 # restart/reset du jeu
 def restart_game():
     global enemies, pickups, doors, mode, player
+    pyxel.play(0, 0, loop=True)
     player["x"] = 10
     player["y"] = 245 * 8
     player["vy"] = 0
@@ -388,7 +389,12 @@ def restart_game():
 
     # exemples de pickups et portes (ajuste positions)
     spawn_pickup(13 * 8, 96 * 8, "gun")
-    spawn_pickup(220 * 8, 245 * 8 - 8, "ammo")
+    spawn_pickup(77 * 8, 99 * 8 - 8, "ammo")
+    spawn_pickup(253 * 8, 83 * 8 - 8, "ammo")
+    spawn_pickup(101 * 8, 246 * 8 - 8, "ammo")
+
+
+
     spawn_pickup(251 * 8, 251 * 8 - 8, "key")
     spawn_door(8 * 8, 228 * 8, 2 * 8, 97 * 8, locked=False)
     spawn_door(72 * 8, 252 * 8, 66 * 8, 100 * 8, locked=False) 
@@ -402,6 +408,7 @@ def restart_game():
 # initialisation pyxel
 pyxel.init(128, 128, title="Jeu de plateforme")
 pyxel.load("jeu.pyxres")
+pyxel.play(0, 0, loop=True)
 
 def update():
     global scroll_x, scroll_y, mode, doors
