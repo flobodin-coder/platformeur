@@ -45,13 +45,14 @@ enemies = []
 pickups = []   # items like "gun" or "ammo"
 doors = []     # doors with target positions
 
+
 # joueur
 player = {
     "x": 10,
     "y": 245 * 8,
     "vx": 2,
     "vy": 2,
-    "vie": 3,
+    "vie": 5,
     "f": True,
     "move": False,
     "last_dir": 1,
@@ -92,6 +93,7 @@ def spawn_pickup(x, y, ptype):
 #   position x et y de la porte, puis l'endroit ou le joueur est teleporter, et puis si elle est bloqué par un objet (clé)
 def spawn_door(x, y, tx, ty, locked=False):
     doors.append({"x": int(x), "y": int(y), "tx": int(tx), "ty": int(ty), "locked": locked})
+
 
 # movement and input
 def player_update():
@@ -348,24 +350,54 @@ def restart_game():
     player["x"] = 10
     player["y"] = 245 * 8
     player["vy"] = 0
-    player["vie"] = 3
+    player["vie"] = 5
     player["has_gun"] = False
     player["ammo"] = 0
     player["invincible_until"] = 0.0
-    player["has_key"] = True
     enemies = []
     pickups = []
     doors = []
+
     mode = "game"
     # (re-spawn quelques entités d'exemple)
-    spawn_enemy(120, 252 * 8, "slime")
-    spawn_enemy(200, 245 * 8, "slime")
-    spawn_enemy(300, 245 * 8, "canon", dir=-1, shoot_interval=2.0)
+    spawn_enemy(2 * 8, 241 * 8, "slime")
+    spawn_enemy(23 * 8, 252 * 8, "slime")
+    spawn_enemy(35 * 8, 252 * 8, "slime")
+    spawn_enemy(52 * 8, 251 * 8, "slime")
+    spawn_enemy(53 * 8, 237 * 8, "slime")
+    spawn_enemy(56 * 8, 230 * 8, "slime")
+    spawn_enemy(41 * 8, 228 * 8, "slime")
+    spawn_enemy(27 * 8, 222 * 8, "slime")    
+    spawn_enemy(6 * 8, 228 * 8, "slime")
+    spawn_enemy(69 * 8, 252 * 8, "slime")
+    spawn_enemy(87 * 8, 247 * 8, "slime")
+    spawn_enemy(187 * 8, 247 * 8, "slime") 
+    spawn_enemy(201 * 8, 252 * 8, "slime")
+    spawn_enemy(224 * 8, 247 * 8, "slime")
+    spawn_enemy(204 * 8, 237 * 8, "slime")  
+    spawn_enemy(203 * 8, 227 * 8, "slime")
+    spawn_enemy(218 * 8, 227 * 8, "slime")
+    spawn_enemy(232 * 8, 227 * 8, "slime")
+    spawn_enemy(254 * 8, 227 * 8, "slime")
+
+    spawn_enemy(94 * 8, 245 * 8, "canon", dir=-1, shoot_interval=1.5)
+    spawn_enemy(119 * 8, 245 * 8, "canon", dir=-1, shoot_interval=1.5)
+    spawn_enemy(137 * 8, 247 * 8, "canon", dir=-1, shoot_interval=1.5)
+    spawn_enemy(148 * 8, 247 * 8, "canon", dir=-1, shoot_interval=1.5)
+    spawn_enemy(162 * 8, 249 * 8, "canon", dir=-1, shoot_interval=1.5)
 
     # exemples de pickups et portes (ajuste positions)
-    spawn_pickup(120, 252 * 8, "gun")
-    spawn_pickup(220, 245 * 8 - 8, "ammo")
-    spawn_door(120, 252 * 8, 120, 252 * 8, locked=True)  # ex: door teleporte a (60, 240*8)
+    spawn_pickup(13 * 8, 96 * 8, "gun")
+    spawn_pickup(220 * 8, 245 * 8 - 8, "ammo")
+    spawn_pickup(251 * 8, 251 * 8 - 8, "key")
+    spawn_door(8 * 8, 228 * 8, 2 * 8, 97 * 8, locked=False)
+    spawn_door(72 * 8, 252 * 8, 66 * 8, 100 * 8, locked=False) 
+    spawn_door(166 * 8, 251 * 8, 242 * 8, 100 * 8, locked= False)
+    spawn_door(251 * 8, 227 *8, 146 * 8, 100 *8, locked= True)  # ex: door teleporte a (60, 240*8)
+    spawn_door( 7 * 8, 97 * 8, 3 * 8, 228 * 8, locked=False)
+    spawn_door(71 * 8, 100 * 8, 67 * 8, 252 * 8, locked=False)
+    spawn_door(241 * 8, 100 * 8, 168 * 8, 251 * 8, locked= False)
+    spawn_door(151 * 8, 100 *8, 246 * 8, 227 *8, locked= False)
 
 # initialisation pyxel
 pyxel.init(128, 128, title="Jeu de plateforme")
